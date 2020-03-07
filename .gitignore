@@ -1,0 +1,5 @@
+vae_mpl/
+*.png
+*.h5
+.idea
+__pycache__
