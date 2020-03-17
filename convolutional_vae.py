@@ -15,11 +15,13 @@ class CVAE(tf.keras.Model):
         Args:
             img_shape (tuple): The shape of input images (height, width, channels)
             latent_dim (int): Size of encoding
+            beta (:obj:`float32`, optional):
+
         """
         super(CVAE, self).__init__()
         self.img_shape = img_shape
-        self.latent_dim = latent_dim
-        self.beta = beta
+        self.latent_dim = tf.constant(latent_dim)
+        self.beta = tf.constant(beta)
 
         encoder_input = Input(shape=self.img_shape)
         x = Conv2D(filters=32, kernel_size=5, activation='relu', padding='same')(encoder_input)
@@ -55,8 +57,7 @@ class CVAE(tf.keras.Model):
         mean, logvar = tf.split(self.inference_net(x), num_or_size_splits=2, axis=1)
         return mean, logvar
 
-    @staticmethod
-    def reparametrize(mean, logvar):
+    def reparametrize(self, mean, logvar):
         """Sample from a normal distribution with the given means and log variances using the reparametrization trick
 
         Args:
@@ -130,4 +131,4 @@ def compute_apply_gradients(model, x, opt):
         loss = compute_loss(model, x)
     gradients = tape.gradient(loss, model.trainable_variables)
     opt.apply_gradients(zip(gradients, model.trainable_variables))
-
+    return loss

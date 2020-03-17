@@ -3,3 +3,4 @@ vae_mpl/
 *.h5
 .idea
 __pycache__
+checkpoints/
