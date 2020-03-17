@@ -114,7 +114,8 @@ def compute_loss(model, x):
 
     reconstruction_loss = tf.reduce_mean(tf.reduce_sum(tf.square(x - decoded), axis=[1, 2, 3]))
     kl_loss = - tf.reduce_mean(0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar), axis=1))
-    return reconstruction_loss + model.beta * kl_loss
+    loss = reconstruction_loss + model.beta * kl_loss
+    return reconstruction_loss, kl_loss, loss
 
 
 @tf.function
@@ -128,7 +129,7 @@ def compute_apply_gradients(model, x, opt):
 
     """
     with tf.GradientTape() as tape:
-        loss = compute_loss(model, x)
+        reconstruction_loss, kl_loss, loss = compute_loss(model, x)
     gradients = tape.gradient(loss, model.trainable_variables)
     opt.apply_gradients(zip(gradients, model.trainable_variables))
-    return loss
+    return reconstruction_loss, kl_loss, loss
