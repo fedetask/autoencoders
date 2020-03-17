@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 import cv2
-from convolutional_vae import CVAE, compute_apply_gradients
+from convolutional_vae import CVAE
 import os
 
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                                                                                  'train_kl_loss',
                                                                                  'validation_reconstruction_loss'])
         for i in range(0, len(train_images), batch_size):
-            rc_loss, kl_loss, loss = compute_apply_gradients(autoencoder, train_images[i: i + batch_size], optimizer)
+            rc_loss, kl_loss, loss = autoencoder.compute_apply_gradients(train_images[i: i + batch_size], optimizer)
             train_rec_metr.update_state(rc_loss)
             train_kl_metr.update_state(kl_loss)
             if i % validation_freq == 0:

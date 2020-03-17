@@ -90,46 +90,39 @@ class CVAE(tf.keras.Model):
 
         return logits
 
+    def compute_loss(self, x):
+        """Compute the VAE loss (reconstruction + KL divergence) for the given batch of images
 
-@tf.function
-def compute_loss(model, x):
-    """Compute the VAE loss (reconstruction + KL divergence) for the given model and batch of images
-
-    For a batch of N images, the loss is computed as reconstruction_loss + KL_loss, where
-        reconstruction_loss: Mean (over the N images) of the sum of squared errors between images and their
-                            reconstructions
+        For a batch of N images, the loss is computed as reconstruction_loss + KL_loss, where
+        reconstruction_loss: Mean (over the N images) of the sum squared errors between images and their reconstructions
         KL_loss: KL divergence between the encoder predicted distribution and N(0, 1)
 
-    Args:
-        model (CVAE): A CVAE object for which the loss has to be computed
-        x (Tensor): A batch of N images with shape `model.img_shape`
+        Args:
+            x (Tensor): A batch of N images with shape `model.img_shape`
 
-    Returns:
-        Loss of the batch as described above
+        Returns:
+            Loss of the batch as described above
 
-    """
-    mean, logvar = model.encode(x)
-    z = model.reparametrize(mean, logvar)
-    decoded = model.decode(z)
+        """
+        mean, logvar = self.encode(x)
+        z = self.reparametrize(mean, logvar)
+        decoded = self.decode(z)
 
-    reconstruction_loss = tf.reduce_mean(tf.reduce_sum(tf.square(x - decoded), axis=[1, 2, 3]))
-    kl_loss = - tf.reduce_mean(0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar), axis=1))
-    loss = reconstruction_loss + model.beta * kl_loss
-    return reconstruction_loss, kl_loss, loss
+        reconstruction_loss = tf.reduce_mean(tf.reduce_sum(tf.square(x - decoded), axis=[1, 2, 3]))
+        kl_loss = - tf.reduce_mean(0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar), axis=1))
+        loss = reconstruction_loss + self.beta * kl_loss
+        return reconstruction_loss, kl_loss, loss
 
+    def compute_apply_gradients(self, x, opt):
+        """Compute the gradients of the model variables with respect to the loss batch and update the model
 
-@tf.function
-def compute_apply_gradients(model, x, opt):
-    """Compute the gradients of the model variables with respect to the loss for the given batch and update the model
+        Args:
+            x (Tensor): Batch of N images with shape `model.img_shape`
+            opt (tf.keras.optimizers.Optimizer): Keras Optimizer used for applying gradients
 
-    Args:
-        model (CVAE): A CVAE object that we want to update
-        x (Tensor): Batch of N images with shape `model.img_shape`
-        opt (tf.keras.optimizers.Optimizer): Keras Optimizer used for applying gradients
-
-    """
-    with tf.GradientTape() as tape:
-        reconstruction_loss, kl_loss, loss = compute_loss(model, x)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    opt.apply_gradients(zip(gradients, model.trainable_variables))
-    return reconstruction_loss, kl_loss, loss
+        """
+        with tf.GradientTape() as tape:
+            reconstruction_loss, kl_loss, loss = self.compute_loss(x)
+        gradients = tape.gradient(loss, self.trainable_variables)
+        opt.apply_gradients(zip(gradients, self.trainable_variables))
+        return reconstruction_loss, kl_loss, loss
