@@ -95,17 +95,17 @@ def train(model, train_data, optimizer, validation_data=None, epochs=50, batch_s
     """
 
     Args:
-        model ():
-        train_data ():
-        optimizer ():
-        validation_data ():
-        epochs ():
-        batch_size ():
-        save_checkpoint ():
-        checkpoint_dir ():
-        checkpoint_save_freq ():
+        model (CVAE): CVAE model to be trained
+        train_data (Tensor or ndarray): Images for training, of shape N x `model.img_shape`
+        optimizer (tf.keras.optimizers.Optimizer): Any implementation of keras Optimizer class
+        validation_data (Tensor or ndarray): Images for training, of shape N x `model.img_shape`. If this field is
+                                            present, validation will be performed every 20 batches and reported
+        epochs (:obj:`int`, optional): Number of training iterations over the entire dataset. Defaults to 50
+        batch_size (:obj:`int`, optional): Size of batch (should be >= 100). Defaults to 100
+        save_checkpoint (:obj:`bool`, optional): If true, a checkpoint of the model will be saved in the given dir
+        checkpoint_dir (:obj:`str`, optional): Directory in which to save checkpoints. Defaults to `checkpoints/`
+        checkpoint_save_freq (:obj:`int`, optional): Frequency (in epochs) of checkpoint saving
 
-    Returns:
 
     """
     # Metrics
