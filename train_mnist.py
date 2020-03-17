@@ -90,6 +90,59 @@ def load_mnist_dataset(img_size, normalize=True):
     return x_train, x_test
 
 
+def train(model, train_data, optimizer, validation_data=None, epochs=50, batch_size=100,
+          save_checkpoint=True, checkpoint_dir='checkpoints', checkpoint_save_freq=1):
+    """
+
+    Args:
+        model ():
+        train_data ():
+        optimizer ():
+        validation_data ():
+        epochs ():
+        batch_size ():
+        save_checkpoint ():
+        checkpoint_dir ():
+        checkpoint_save_freq ():
+
+    Returns:
+
+    """
+    # Metrics
+    train_rec_metr = tf.keras.metrics.Mean()
+    train_kl_metr = tf.keras.metrics.Mean()
+    val_metr = tf.keras.metrics.Mean()
+    validation_freq = 20  # Validate every 20 batches
+    stateful_metrics = ['train_reconstruction_loss', 'train_kl_loss']
+    if validation_data is not None:
+        stateful_metrics.append('validation_reconstruction_loss')
+
+    # Checkpoint
+    if save_checkpoint:
+        checkpoint_saver = tf.train.Checkpoint(optimizer=optimizer, model=model)
+
+    # Train
+    for epoch in range(epochs):
+        print("Epoch {}/{}".format(epoch, epochs))
+        bar = tf.keras.utils.Progbar(target=len(train_data), stateful_metrics=stateful_metrics)
+        for i in range(0, len(train_data), batch_size):
+            rc_loss, kl_loss, loss = model.compute_apply_gradients(train_data[i: i + batch_size], optimizer)
+            train_rec_metr.update_state(rc_loss)
+            train_kl_metr.update_state(kl_loss)
+            metrics = [('train_reconstruction_loss', train_rec_metr.result().numpy()),
+                       ('train_kl_loss', train_kl_metr.result().numpy())]
+            if validation_data is not None and i % validation_freq == 0:
+                val_loss = validation_loss(model, validation_data)
+                val_metr.update_state(val_loss)
+                metrics.append(('validation_reconstruction_loss', val_metr.result().numpy()))
+            bar.add(batch_size, metrics)
+        if save_checkpoint and i % checkpoint_save_freq == 0:
+            checkpoint_saver.save(file_prefix=os.path.join(checkpoint_dir, 'cpk'))
+        train_rec_metr.reset_states()
+        train_kl_metr.reset_states()
+        val_metr.reset_states()
+
+
 if __name__ == "__main__":
     # Load data
     img_shape = (32, 32)
@@ -97,44 +150,11 @@ if __name__ == "__main__":
 
     # Create model
     autoencoder = CVAE(img_shape=train_images.shape[1:], latent_dim=32, beta=3.0)
+    adam = tf.keras.optimizers.Adam()
 
-    # Training parameters
-    optimizer = tf.keras.optimizers.Adam(1e-4)
-    epochs = 50
-    batch_size = 100
-
-    # Checkpoint configuration
-    checkpoint_freq = 1
     checkpoint_directory = 'checkpoints/'
-    checkpoint_prefix = os.path.join(checkpoint_directory, 'cpk')
-    checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=autoencoder)
+    checkpoint = tf.train.Checkpoint(optimizer=adam, model=autoencoder)
     status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_directory))
 
-    # Metrics
-    train_rec_metr = tf.keras.metrics.Mean()
-    train_kl_metr = tf.keras.metrics.Mean()
-    val_metr = tf.keras.metrics.Mean()
-    validation_freq = 20  # Validate every 20 batches
-
-    # Train
-    for epoch in range(epochs):
-        print("Epoch {}/{}".format(epoch, epochs))
-        bar = tf.keras.utils.Progbar(target=len(train_images), stateful_metrics=['train_reconstruction_loss',
-                                                                                 'train_kl_loss',
-                                                                                 'validation_reconstruction_loss'])
-        for i in range(0, len(train_images), batch_size):
-            rc_loss, kl_loss, loss = autoencoder.compute_apply_gradients(train_images[i: i + batch_size], optimizer)
-            train_rec_metr.update_state(rc_loss)
-            train_kl_metr.update_state(kl_loss)
-            if i % validation_freq == 0:
-                val_loss = validation_loss(autoencoder, test_images)
-                val_metr.update_state(val_loss)
-            bar.add(batch_size, [('train_reconstruction_loss', train_rec_metr.result().numpy()),
-                                 ('train_kl_loss', train_kl_metr.result().numpy()),
-                                 ('validation_loss', val_metr.result())])
-        checkpoint.save(file_prefix=checkpoint_prefix)
-        train_rec_metr.reset_states()
-        train_kl_metr.reset_states()
-        val_metr.reset_states()
-
+    # train(model=autoencoder, train_data=train_images, optimizer=adam, validation_data=test_images)
     visualize_results(autoencoder, test_images, n_images=20, images_per_row=10)
