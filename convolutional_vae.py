@@ -15,7 +15,7 @@ class CVAE(tf.keras.Model):
         Args:
             img_shape (tuple): The shape of input images (height, width, channels)
             latent_dim (int): Size of encoding
-            beta (:obj:`float32`, optional):
+            beta (float32, optional):
 
         """
         super(CVAE, self).__init__()
@@ -76,7 +76,7 @@ class CVAE(tf.keras.Model):
 
         Args:
             z (Tensor): N latent vectors (as Tensors)
-            apply_sigmoid (:obj:`int`, optional): Whether to apply a sigmoid activation on the decoded images
+            apply_sigmoid (int, optional): Whether to apply a sigmoid activation on the decoded images
 
         Returns:
             N images decoded from the given latent space representations. Pixel values are ensured to be in [0, 1] only

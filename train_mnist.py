@@ -18,7 +18,7 @@ def validation_loss(model, validation_data, n_validate=100):
     Args:
         model (CVAE): CVAE object to be evaluated
         validation_data (ndarray): Numpy array of images of shape N x `model.img_shape`
-        n_validate (:obj:`int`, optional) Number of samples to draw from `validation_data`. Defaults to 100
+        n_validate (int, optional) Number of samples to draw from `validation_data`. Defaults to 100
 
     Returns:
         Mean Squared Error validation loss between the random batch and its encode-decode reconstruction
@@ -39,8 +39,8 @@ def visualize_results(model, test_data, n_images=20, images_per_row=10):
     Args:
         model (CVAE):
         test_data (ndarray): Numpy array of N images, each with shape `model.img_shape`
-        n_images (:obj:`int`, optional): Number of images to display
-        images_per_row (:obj:`int`, optional): Number of images per row. Must be a submultiple of `n_images`
+        n_images (int, optional): Number of images to display
+        images_per_row (int, optional): Number of images per row. Must be a submultiple of `n_images`
 
     """
     sampled_indices = tf.random.uniform(shape=[n_images], minval=0, maxval=test_data.shape[0], dtype=tf.int64)
@@ -66,7 +66,7 @@ def load_mnist_dataset(img_size, normalize=True):
 
     Args:
         img_size (tuple): Size (width, height) to which images are resized.
-        normalize (:obj:`bool`, optional)
+        normalize (bool, optional)
 
     Returns:
         x_train, x_test: Train and test dataset respectively resized to the given size, reshaped for tensorflow
@@ -100,11 +100,11 @@ def train(model, train_data, optimizer, validation_data=None, epochs=50, batch_s
         optimizer (tf.keras.optimizers.Optimizer): Any implementation of keras Optimizer class
         validation_data (Tensor or ndarray): Images for training, of shape N x `model.img_shape`. If this field is
                                             present, validation will be performed every 20 batches and reported
-        epochs (:obj:`int`, optional): Number of training iterations over the entire dataset. Defaults to 50
-        batch_size (:obj:`int`, optional): Size of batch (should be >= 100). Defaults to 100
-        save_checkpoint (:obj:`bool`, optional): If true, a checkpoint of the model will be saved in the given dir
-        checkpoint_dir (:obj:`str`, optional): Directory in which to save checkpoints. Defaults to `checkpoints/`
-        checkpoint_save_freq (:obj:`int`, optional): Frequency (in epochs) of checkpoint saving
+        epochs (int, optional): Number of training iterations over the entire dataset. Defaults to 50
+        batch_size (int, optional): Size of batch (should be >= 100). Defaults to 100
+        save_checkpoint (bool, optional): If true, a checkpoint of the model will be saved in the given dir
+        checkpoint_dir (str, optional): Directory in which to save checkpoints. Defaults to `checkpoints/`
+        checkpoint_save_freq (int, optional): Frequency (in epochs) of checkpoint saving
 
 
     """
