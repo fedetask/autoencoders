@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Input, Conv2D, Flatten, Conv2DTranspose, Den
 
 class CVAE(tf.keras.Model):
 
-    def __init__(self, img_shape, latent_dim, beta=1):
+    def __init__(self, img_shape, latent_dim, beta=1.):
         """Create the Convolutional Variational Autoencoder model.
 
         The model consists of 4 convolutional layers, each one downscaling the image by a factor of 2, the encoded layer
@@ -21,7 +21,7 @@ class CVAE(tf.keras.Model):
         super(CVAE, self).__init__()
         self.img_shape = img_shape
         self.latent_dim = tf.constant(latent_dim)
-        self.beta = tf.constant(beta)
+        self.beta = tf.constant(float(beta))
 
         encoder_input = Input(shape=self.img_shape)
         x = Conv2D(filters=32, kernel_size=5, activation='relu', padding='same')(encoder_input)
