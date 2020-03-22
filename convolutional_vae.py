@@ -21,7 +21,7 @@ class CVAE(tf.keras.Model):
         super(CVAE, self).__init__()
         self.img_shape = img_shape
         self.latent_dim = tf.constant(latent_dim)
-        self.beta = tf.constant(float(beta))
+        self.beta = tf.Variable(float(beta), trainable=False)
 
         encoder_input = Input(shape=self.img_shape)
         x = Conv2D(filters=32, kernel_size=5, activation='relu', padding='same')(encoder_input)
